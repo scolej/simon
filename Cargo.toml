@@ -1,0 +1,12 @@
+[package]
+name = "jenkmon"
+version = "0.0.0"
+authors = []
+
+[[bin]]
+name = "jenk"
+path = "src/jenk.rs"
+
+[dependencies.conrod]
+version = "0.58.0"
+features = ["winit", "glium"]
