@@ -27,6 +27,8 @@ struct BranchRecord {
     builds: [Build]
 }
 
+// DI-Lan! No judgment please, there is not even a proper event loop yet :)
+// Maybe it doesn't even compile!
 fn main() {
     const WIDTH: u32 = 400;
     const HEIGHT: u32 = 200;
@@ -54,6 +56,22 @@ fn main() {
         elapsed_time: Duration::from_secs(60)
     };
 
+    let b2 = Build {
+        branch: "master".to_string(),
+        commit: "00000".to_string(),
+        number: 2,
+        status: BuildStatus::Failed,
+        elapsed_time: Duration::from_secs(60)
+    };
+
+    let b3 = Build {
+        branch: "master".to_string(),
+        commit: "11111".to_string(),
+        number: 3,
+        status: BuildStatus::Passed,
+        elapsed_time: Duration::from_secs(60)
+    };
+
     let mut ids = HashMap::new();
     ids.insert(b1, 0);
 
@@ -73,7 +91,7 @@ fn main() {
             let pad = 1.0;
 
             widget::Button::new()
-                .label("1sky-rz-tb01/develop")
+                .label("1skyrz-tb01/develop")
                 .top_left()
                 .right_justify_label()
                 .w_h(wide, side)
@@ -94,7 +112,7 @@ fn main() {
                 .set(ids.but2, ui);
 
             widget::Button::new()
-                .label("1sky-rz-tb01/develop")
+                .label("1skyrz-tb01/develop")
                 .down(pad)
                 .x_place(conrod::position::Place::Start(None))
                 .right_justify_label()
