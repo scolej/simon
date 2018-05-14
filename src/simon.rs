@@ -5,18 +5,18 @@ extern crate rand;
 extern crate rand_derive;
 
 use conrod::backend::glium::glium::{self, Surface};
-use conrod::{widget, Positionable, Widget, Labelable, Sizeable};
+use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
 use rand::Rng;
 use std::collections::HashMap;
-use std::thread::sleep;
-use std::time::{Instant, Duration};
 use std::fmt;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 enum BuildStatus {
     InProgress,
     Failed,
-    Passed
+    Passed,
 }
 
 #[derive(PartialEq, Eq, Hash, Debug)]
@@ -24,20 +24,20 @@ struct Build {
     id: BuildId,
     commit: String,
     status: BuildStatus,
-    elapsed_time: Duration
+    elapsed_time: Duration,
 }
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 struct BuildId {
     branch: String,
-    number: u16
+    number: u16,
 }
 
 fn random_status() -> BuildStatus {
     static STATUSES: [BuildStatus; 3] = [
         BuildStatus::InProgress,
         BuildStatus::Failed,
-        BuildStatus::Passed
+        BuildStatus::Passed,
     ];
     STATUSES[rand(STATUSES.len())]
 }
@@ -47,18 +47,21 @@ fn rand(max: usize) -> usize {
 }
 
 fn random_branch() -> String {
-    static BRANCHES: [&str; 6] =
-        ["master",
-         "develop",
-         "feature/the-best-thing",
-         "feature/the-biggest-thing",
-         "feature/the-fastest-thing",
-         "feature/the-most-stylish-thing"];
+    static BRANCHES: [&str; 6] = [
+        "master",
+        "develop",
+        "feature/the-best-thing",
+        "feature/the-biggest-thing",
+        "feature/the-fastest-thing",
+        "feature/the-most-stylish-thing",
+    ];
     BRANCHES[rand(BRANCHES.len())].to_string()
 }
 
 fn random_commit() -> String {
-    let chars = ['a','b','c','d','e','f','0','1','2','3','4','5','6','7','8','9'];
+    let chars = [
+        'a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    ];
     let mut s = String::new();
     for n in 0..10 {
         let i: usize = rand::thread_rng().gen::<usize>() % chars.len();
@@ -71,11 +74,11 @@ fn a_random_build() -> Build {
     Build {
         id: BuildId {
             branch: random_branch(),
-            number: rand::thread_rng().gen()
+            number: rand::thread_rng().gen(),
         },
         commit: random_commit(),
         status: random_status(),
-        elapsed_time: Duration::from_secs(rand::thread_rng().gen())
+        elapsed_time: Duration::from_secs(rand::thread_rng().gen()),
     }
 }
 
@@ -93,7 +96,11 @@ fn main2() {
 
     let mut ui = conrod::UiBuilder::new([WIDTH as f64, HEIGHT as f64]).build();
 
-    ui.theme.font_id = Some(ui.fonts.insert_from_file("NotoSansMono-SemiBold.ttf").unwrap());
+    ui.theme.font_id = Some(
+        ui.fonts
+            .insert_from_file("NotoSansMono-SemiBold.ttf")
+            .unwrap(),
+    );
 
     let mut events_loop = glium::glutin::EventsLoop::new();
     let window = glium::glutin::WindowBuilder::new()
@@ -151,7 +158,6 @@ fn main2() {
             //     .right_justify_label()
             //     .w_h(wide, side)
             //     .set(ids.text2, ui);
-
         }
 
         if let Some(primitives) = ui.draw_if_changed() {
@@ -163,6 +169,5 @@ fn main2() {
         }
 
         sleep(Duration::from_secs(1))
-
     }
 }
