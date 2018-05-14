@@ -1,0 +1,15 @@
+language: rust
+rust:
+  - stable
+  - beta
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
+before_script:
+  - rustup component add rustfmt-preview
+script:
+  - cargo fmt --all -- --write-mode=check
+  - cargo build
+  - cargo test
