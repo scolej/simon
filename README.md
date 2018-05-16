@@ -9,3 +9,17 @@ Goals:
 
 - UI is information dense.
 - UI is useful and informative over a large range of window sizes.
+
+### Running the binaries
+
+To try UI:
+
+```shell
+$ cargo run --bin simon
+```
+
+To try API:
+
+```shell
+$ cargo run --bin backend
+```

@@ -1,5 +1,5 @@
 extern crate conrod;
-extern crate rand;
+extern crate simon;
 
 use conrod::backend::glium::glium::{self, Surface};
 use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
@@ -7,12 +7,8 @@ use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::Duration;
 
-mod model;
-mod provider;
-mod random;
-
-use model::{Build, BuildId, BuildStatus};
-use random::a_random_build;
+use simon::{Build, BuildId, BuildStatus};
+use simon::random::a_random_build;
 
 fn main() {
     // Get some test data.

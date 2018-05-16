@@ -3,12 +3,13 @@
 use std::time::Duration;
 
 pub struct BuildQuery {
-    branch: String,
-    project: String,
+    pub branch: String,
+    pub project: String,
+    pub namespace: String,
 }
 
 pub struct BuildResponse {
-    build: Build,
+    pub build: Build,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
@@ -18,6 +19,7 @@ pub enum BuildStatus {
     Passed,
 }
 
+// FIXME: Probably do not want these to be public accessors
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub struct Build {
     pub id: BuildId,
