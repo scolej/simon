@@ -7,31 +7,13 @@ extern crate rand_derive;
 use conrod::backend::glium::glium::{self, Surface};
 use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
 use rand::Rng;
-use std::collections::HashMap;
-use std::fmt;
 use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
-enum BuildStatus {
-    InProgress,
-    Failed,
-    Passed,
-}
+mod model;
+mod provider;
 
-#[derive(PartialEq, Eq, Hash, Debug)]
-struct Build {
-    id: BuildId,
-    commit: String,
-    status: BuildStatus,
-    elapsed_time: Duration,
-}
-
-#[derive(PartialEq, Eq, Hash, Debug)]
-struct BuildId {
-    branch: String,
-    number: u16,
-}
+use model::{Build, BuildStatus};
 
 fn random_status() -> BuildStatus {
     static STATUSES: [BuildStatus; 3] = [
@@ -60,7 +42,7 @@ fn random_branch() -> String {
 
 fn random_commit() -> String {
     let chars = [
-        'a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
     ];
     let mut s = String::new();
     for n in 0..10 {
