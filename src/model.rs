@@ -1,6 +1,5 @@
 /// Modelled representation of the build data to exchange between front end and
 /// API
-
 use std::time::Duration;
 
 pub struct BuildQuery {
@@ -20,15 +19,15 @@ pub enum BuildStatus {
 }
 
 #[derive(PartialEq, Eq, Hash, Debug)]
-struct Build {
-    id: BuildId,
-    commit: String,
-    status: BuildStatus,
-    elapsed_time: Duration,
+pub struct Build {
+    pub id: BuildId,
+    pub commit: String,
+    pub status: BuildStatus,
+    pub elapsed_time: Duration,
 }
 
 #[derive(PartialEq, Eq, Hash, Debug)]
-struct BuildId {
-    branch: String,
-    number: u16,
+pub struct BuildId {
+    pub branch: String,
+    pub number: u16, // By the way, this should probably be a string, to facilitate things like matrix build numbers.
 }
