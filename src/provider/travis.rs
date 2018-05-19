@@ -1,11 +1,11 @@
 use super::ProviderApi;
+use dotenv::dotenv;
+use failure::Error;
 use model::{Build, BuildId, BuildQuery, BuildResponse, BuildStatus};
 use reqwest::{self, header};
-use failure::Error;
 use std::convert::From;
-use std::time::Duration;
-use dotenv::dotenv;
 use std::env;
+use std::time::Duration;
 
 const URL: &str = "https://api.travis-ci.org";
 pub struct TravisApi;
@@ -80,9 +80,12 @@ extern crate serde_json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TravisResponse {
-    #[serde(rename = "@type")] travis_response_type: String,
-    #[serde(rename = "@href")] href: String,
-    #[serde(rename = "@representation")] representation: String,
+    #[serde(rename = "@type")]
+    travis_response_type: String,
+    #[serde(rename = "@href")]
+    href: String,
+    #[serde(rename = "@representation")]
+    representation: String,
     name: String,
     repository: Repository,
     default_branch: bool,
@@ -92,9 +95,12 @@ pub struct TravisResponse {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LastBuild {
-    #[serde(rename = "@type")] last_build_type: String,
-    #[serde(rename = "@href")] href: String,
-    #[serde(rename = "@representation")] representation: String,
+    #[serde(rename = "@type")]
+    last_build_type: String,
+    #[serde(rename = "@href")]
+    href: String,
+    #[serde(rename = "@representation")]
+    representation: String,
     id: i64,
     number: String,
     state: String,
@@ -110,9 +116,12 @@ pub struct LastBuild {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Repository {
-    #[serde(rename = "@type")] repository_type: String,
-    #[serde(rename = "@href")] href: String,
-    #[serde(rename = "@representation")] representation: String,
+    #[serde(rename = "@type")]
+    repository_type: String,
+    #[serde(rename = "@href")]
+    href: String,
+    #[serde(rename = "@representation")]
+    representation: String,
     id: i64,
     name: String,
     slug: String,

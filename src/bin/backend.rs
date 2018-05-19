@@ -1,6 +1,6 @@
 extern crate simon;
-use simon::BuildQuery;
 use simon::provider::ProviderApi;
+use simon::BuildQuery;
 
 fn main() {
     println!("Checking the backend");

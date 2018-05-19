@@ -28,7 +28,7 @@ pub struct Build {
     pub elapsed_time: Duration,
 }
 
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct BuildId {
     pub branch: String,
     pub number: u16, // By the way, this should probably be a string, to facilitate things like matrix build numbers.

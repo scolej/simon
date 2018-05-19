@@ -1,7 +1,7 @@
+use failure::Error;
 /// Continuous Integration providers. These are the services that perform the
 /// build pipeline and provide an interface that this tool will query.
 use model::{BuildQuery, BuildResponse};
-use failure::Error;
 
 pub mod travis;
 

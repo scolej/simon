@@ -1,15 +1,16 @@
+#[macro_use]
 extern crate conrod;
 extern crate simon;
 
 use conrod::backend::glium::glium::{self, Surface};
+use conrod::position::Place;
 use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
 use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::Duration;
-use petgraph::graph_impl::NodeIndex;
 
-use simon::{Build, BuildId, BuildStatus};
 use simon::random::a_random_build;
+use simon::{Build, BuildId, BuildStatus};
 
 fn main() {
     // Get some test data.
@@ -31,7 +32,7 @@ fn main() {
 
     let mut events_loop = glium::glutin::EventsLoop::new();
     let window = glium::glutin::WindowBuilder::new()
-        .with_title("Hello Conrod!")
+        .with_title("Simon")
         .with_dimensions(WIDTH, HEIGHT);
     let context = glium::glutin::ContextBuilder::new()
         .with_vsync(true)
@@ -40,11 +41,22 @@ fn main() {
     let mut renderer = conrod::backend::glium::Renderer::new(&display).unwrap();
     let image_map = conrod::image::Map::<glium::texture::Texture2d>::new();
 
-    let mut ids = HashMap::new();
-    let mut i = 0;
+    // widget_ids! {
+    //     struct Ids {
+    //         branch_buttons[],
+    //         build_buttons[],
+    //     }
+    // }
+    // let mut ids = Ids::new(ui.widget_id_generator());
+
+    let mut branch_button_ids = HashMap::new();
+    let mut build_button_ids = HashMap::new();
+    let canvas_id = ui.widget_id_generator().next();
+
+    let mut build_map = HashMap::new();
     for b in &builds {
-        ids.insert(b, NodeIndex::new(i));
-        i += 1;
+        let e = build_map.entry(&b.id.branch);
+        e.or_insert(Vec::new()).push(b);
     }
 
     // FIXME This awful dirty loop.
@@ -63,16 +75,39 @@ fn main() {
             let wide = 280.0;
             let pad = 1.0;
 
-            for (build, id) in &ids {
-                let text = [build.id.branch, build.id.number.to_string(), build.commit].join("\n");
-                widget::Button::new()
-                    .label(&text)
-                    .top_left()
-                    .right_justify_label()
-                    .w_h(wide, side)
-                    .set(id, ui);
-            }
+            widget::TextBox::new("Filter branches here")
+                .top_left()
+                .h(40.0)
+                .set(canvas_id, ui);
 
+            for (branch, builds) in build_map.iter() {
+                let branch_build_id = branch_button_ids
+                    .entry(branch.to_owned())
+                    .or_insert(ui.widget_id_generator().next());
+                widget::Button::new()
+                    .label(branch.to_owned())
+                    .down(pad)
+                    .x_place(Place::Start(None))
+                    .w_h(wide, side)
+                    .set(*branch_build_id, ui);
+
+                for build in builds.iter() {
+                    let widg_build_id = build_button_ids
+                        .entry(build.id.clone())
+                        .or_insert(ui.widget_id_generator().next());
+                    let text = [
+                        // build.id.branch.to_owned(),
+                        build.id.number.to_string(),
+                        build.commit.to_owned(),
+                    ].join("\n");
+                    widget::Button::new()
+                        .label(&text)
+                        .right(pad)
+                        .center_justify_label()
+                        .w_h(side, side)
+                        .set(*widg_build_id, ui);
+                }
+            }
         }
 
         if let Some(primitives) = ui.draw_if_changed() {
