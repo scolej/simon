@@ -59,15 +59,27 @@ fn main() {
         e.or_insert(Vec::new()).push(b);
     }
 
-    // FIXME This awful dirty loop.
+    let mut events = Vec::new();
+
     loop {
+        events.clear();
         events_loop.poll_events(|event| {
+            events.push(event);
+        });
+        if events.is_empty() {
+            events_loop.run_forever(|event| {
+                events.push(event);
+                glium::glutin::ControlFlow::Break
+            });
+        }
+
+        for event in events.drain(..) {
             let input = match conrod::backend::winit::convert_event(event, &display) {
-                None => return,
+                None => continue,
                 Some(input) => input,
             };
             ui.handle_event(input);
-        });
+        }
 
         {
             let ui = &mut ui.set_widgets();
@@ -117,7 +129,5 @@ fn main() {
             renderer.draw(&display, &mut target, &image_map).unwrap();
             target.finish().unwrap();
         }
-
-        sleep(Duration::from_secs(1))
     }
 }
