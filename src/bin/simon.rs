@@ -6,6 +6,7 @@ use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
 use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::Duration;
+use petgraph::graph_impl::NodeIndex;
 
 use simon::{Build, BuildId, BuildStatus};
 use simon::random::a_random_build;
@@ -40,8 +41,10 @@ fn main() {
     let image_map = conrod::image::Map::<glium::texture::Texture2d>::new();
 
     let mut ids = HashMap::new();
+    let mut i = 0;
     for b in &builds {
-        ids.insert(&b.id, b);
+        ids.insert(b, NodeIndex::new(i));
+        i += 1;
     }
 
     // FIXME This awful dirty loop.
@@ -60,34 +63,16 @@ fn main() {
             let wide = 280.0;
             let pad = 1.0;
 
-            // widget::Button::new()
-            //     .label("1skyrz-tb01/develop")
-            //     .top_left()
-            //     .right_justify_label()
-            //     .w_h(wide, side)
-            //     .set(ids.text, ui);
+            for (build, id) in &ids {
+                let text = [build.id.branch, build.id.number.to_string(), build.commit].join("\n");
+                widget::Button::new()
+                    .label(&text)
+                    .top_left()
+                    .right_justify_label()
+                    .w_h(wide, side)
+                    .set(id, ui);
+            }
 
-            // widget::Button::new()
-            //     .label("47\n3243fa6\n00:15")
-            //     .center_justify_label()
-            //     .w_h(side, side)
-            //     .right(pad)
-            //     .set(ids.but1, ui);
-
-            // widget::Button::new()
-            //     .label("48\n3243fa6\n00:15")
-            //     .center_justify_label()
-            //     .w_h(side, side)
-            //     .right(pad)
-            //     .set(ids.but2, ui);
-
-            // widget::Button::new()
-            //     .label("1skyrz-tb01/develop")
-            //     .down(pad)
-            //     .x_place(conrod::position::Place::Start(None))
-            //     .right_justify_label()
-            //     .w_h(wide, side)
-            //     .set(ids.text2, ui);
         }
 
         if let Some(primitives) = ui.draw_if_changed() {
