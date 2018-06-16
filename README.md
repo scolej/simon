@@ -1,5 +1,7 @@
 # Simon
 
+[![Build Status](https://travis-ci.org/scolej/simon.svg?branch=master)](https://travis-ci.org/scolej/simon)
+
 An oronym of an acronym: CI-Mon: Continuous Integration Monitor.
 
 A light-weight desktop client to sit in the corner of your screen and
