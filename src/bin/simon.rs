@@ -82,7 +82,7 @@ fn main() {
     }
 
     let mut events = Vec::new();
-    loop {
+    'render: loop {
         events.clear();
         events_loop.poll_events(|event| {
             events.push(event);
@@ -95,6 +95,16 @@ fn main() {
         }
 
         for event in events.drain(..) {
+            match event.clone() {
+                glium::glutin::Event::WindowEvent { event, .. } => match event {
+                    glium::glutin::WindowEvent::Closed => {
+                        break 'render;
+                    }
+                    _ => (),
+                },
+                _ => (),
+            }
+
             let input = match conrod::backend::winit::convert_event(event, &display) {
                 None => continue,
                 Some(input) => input,
