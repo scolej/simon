@@ -1,16 +1,45 @@
-#[macro_use]
 extern crate conrod;
 extern crate simon;
 
 use conrod::backend::glium::glium::{self, Surface};
+use conrod::backend::winit::WinitWindow;
 use conrod::position::Place;
 use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
+use std::cmp::min;
 use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::Duration;
 
 use simon::random::a_random_build;
 use simon::{Build, BuildId, BuildStatus};
+
+#[derive(PartialEq, Eq, Debug)]
+enum DisplayMode {
+    Tiny,        // Draw a button for each build with no label.
+    Abbreviated, // Draw a button with only the build number.
+    Full,        // Draw a button with build number, commit hash and build duration.
+}
+
+// Given the width and height of the window, determine what display mode to use.
+fn display_mode(w: u32, h: u32) -> DisplayMode {
+    let small = min(w, h);
+    if small < 200 {
+        DisplayMode::Tiny
+    } else if small < 400 {
+        DisplayMode::Abbreviated
+    } else {
+        DisplayMode::Full
+    }
+}
+
+// Button size in pixels for a given display mode.
+fn button_size(m: &DisplayMode) -> u32 {
+    match m {
+        DisplayMode::Full => 70,
+        DisplayMode::Abbreviated => 30,
+        DisplayMode::Tiny => 10,
+    }
+}
 
 fn main() {
     // Get some test data.
@@ -41,16 +70,9 @@ fn main() {
     let mut renderer = conrod::backend::glium::Renderer::new(&display).unwrap();
     let image_map = conrod::image::Map::<glium::texture::Texture2d>::new();
 
-    // widget_ids! {
-    //     struct Ids {
-    //         branch_buttons[],
-    //         build_buttons[],
-    //     }
-    // }
-    // let mut ids = Ids::new(ui.widget_id_generator());
-
     let mut branch_button_ids = HashMap::new();
     let mut build_button_ids = HashMap::new();
+
     let canvas_id = ui.widget_id_generator().next();
 
     let mut build_map = HashMap::new();
@@ -60,7 +82,6 @@ fn main() {
     }
 
     let mut events = Vec::new();
-
     loop {
         events.clear();
         events_loop.poll_events(|event| {
@@ -82,9 +103,13 @@ fn main() {
         }
 
         {
+            let (win_width, win_height) = display.get_inner_size().unwrap();
+
+            let current_display_mode = display_mode(win_width, win_height);
+
             let ui = &mut ui.set_widgets();
-            let side = 70.0;
-            let wide = 280.0;
+            let side = button_size(&current_display_mode).into();
+            let wide = side * 2.0;
             let pad = 1.0;
 
             widget::TextBox::new("Filter branches here")
@@ -96,6 +121,8 @@ fn main() {
                 let branch_build_id = branch_button_ids
                     .entry(branch.to_owned())
                     .or_insert(ui.widget_id_generator().next());
+
+                // A button for every branch.
                 widget::Button::new()
                     .label(branch.to_owned())
                     .down(pad)
@@ -107,14 +134,14 @@ fn main() {
                     let widg_build_id = build_button_ids
                         .entry(build.id.clone())
                         .or_insert(ui.widget_id_generator().next());
-                    let text = [
-                        // build.id.branch.to_owned(),
-                        build.id.number.to_string(),
-                        build.commit.to_owned(),
-                    ].join("\n");
-                    widget::Button::new()
-                        .label(&text)
-                        .right(pad)
+                    let text = [build.id.number.to_string(), build.commit.to_owned()].join("\n");
+
+                    // A button for every build.
+                    let mut bb = widget::Button::new();
+                    if current_display_mode != DisplayMode::Tiny {
+                        bb = bb.label(&text);
+                    }
+                    bb.right(pad)
                         .center_justify_label()
                         .w_h(side, side)
                         .set(*widg_build_id, ui);
