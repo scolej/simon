@@ -11,4 +11,8 @@ install:
   - cargo -vV
 build: false
 test_script:
+  - cargo build --bin simon
   - cargo test --verbose %cargoflags%
+artifacts:
+  - path: target\debug\simon.exe
+    name: Simon
