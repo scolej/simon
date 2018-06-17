@@ -1,9 +1,10 @@
 extern crate simon;
-use simon::provider::{ProviderApi, ProviderService};
 use simon::BuildQuery;
+use simon::provider::{ProviderApi, ProviderService};
 
 fn main() {
     println!("Checking the backend");
+    simon::provider::start_backend();
     // let service = ProviderService::new().start()
     // let travis = simon::provider::travis::TravisApi {};
     // let query = BuildQuery {

@@ -8,6 +8,7 @@ pub struct BuildQuery {
     pub namespace: String,
 }
 
+#[derive(Debug)]
 pub struct BuildResponse {
     pub build: Build,
 }
