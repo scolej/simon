@@ -1,6 +1,6 @@
 use super::ProviderApi;
 use dotenv::dotenv;
-use failure::Error;
+use error::SimonError;
 use model::{Build, BuildId, BuildQuery, BuildResponse, BuildStatus};
 use reqwest::{self, header};
 use std::convert::From;
@@ -8,9 +8,10 @@ use std::env;
 use std::time::Duration;
 
 const URL: &str = "https://api.travis-ci.org";
+
 pub struct TravisApi;
 
-header!{(TravisVersion, "Travis-API-Version") => [String]}
+header! {(TravisVersion, "Travis-API-Version") => [String]}
 impl TravisApi {
     fn headers(&self) -> header::Headers {
         let mut headers = header::Headers::new();
@@ -24,7 +25,7 @@ impl TravisApi {
 }
 
 impl ProviderApi for TravisApi {
-    fn build_status(&self, query: BuildQuery) -> Result<BuildResponse, Error> {
+    fn build_status(&self, query: BuildQuery) -> Result<BuildResponse, SimonError> {
         let client = reqwest::Client::new();
         let api = format!(
             "{}/repo/{}%2F{}/branch/{}",
@@ -33,26 +34,16 @@ impl ProviderApi for TravisApi {
 
         let headers = self.headers();
         println!("Hitting {}", api);
-        let mut res = client.get(&api).headers(headers).send()?;
-        println!("{:?}", res);
+        let mut res = client
+            .get(&api)
+            .headers(headers)
+            .query(&[("include", "build.commit")])
+            .send()?;
         let result: TravisResponse = res.json()?;
-        println!("{:?}", result);
+        println!("{:#?}", result);
         Ok(result.into())
     }
 }
-
-// Example code that deserializes and serializes the model.
-// extern crate serde;
-// #[macro_use]
-// extern crate serde_derive;
-// extern crate serde_json;
-//
-// use generated_module::TravisResponse;
-//
-// fn main() {
-//     let json = r#"{"answer": 42}"#;
-//     let model: TravisResponse = serde_json::from_str(&json).unwrap();
-// }
 
 impl From<TravisResponse> for BuildResponse {
     fn from(f: TravisResponse) -> Self {
@@ -61,7 +52,6 @@ impl From<TravisResponse> for BuildResponse {
         } else {
             BuildStatus::Failed
         };
-        // TODO: Convert the ISO formated time to get duration
         let build = Build {
             id: BuildId {
                 number: f.last_build.id as u16,
@@ -70,7 +60,7 @@ impl From<TravisResponse> for BuildResponse {
             // TODO: Need to work out where this comes from
             commit: String::new(),
             status: status,
-            elapsed_time: Duration::from_secs(60),
+            elapsed_time: Duration::from_secs(f.last_build.duration),
         };
         BuildResponse { build }
     }
@@ -104,7 +94,7 @@ pub struct LastBuild {
     id: i64,
     number: String,
     state: String,
-    duration: i64,
+    duration: u64,
     event_type: String,
     previous_state: String,
     pull_request_title: Option<serde_json::Value>,
@@ -112,6 +102,7 @@ pub struct LastBuild {
     started_at: String,
     finished_at: String,
     private: bool,
+    commit: Commit,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -125,4 +116,27 @@ pub struct Repository {
     id: i64,
     name: String,
     slug: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Commit {
+    #[serde(rename = "@type")]
+    commit_type: String,
+    #[serde(rename = "@representation")]
+    representation: String,
+    id: i64,
+    sha: String,
+    #[serde(rename = "ref")]
+    commit_ref: String,
+    message: String,
+    compare_url: String,
+    committed_at: String,
+    committer: Author,
+    author: Author,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Author {
+    name: String,
+    avatar_url: String,
 }
