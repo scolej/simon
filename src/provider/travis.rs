@@ -1,10 +1,10 @@
+use super::ProviderService;
 use actix::{Actor, Addr, Context, Handler, Syn};
 use dotenv::dotenv;
 use error::SimonError;
 use model::{BuildQuery, BuildResponse};
 use reqwest::{self, header};
 use std::env;
-use super::ProviderService;
 
 const URL: &str = "https://api.travis-ci.org";
 

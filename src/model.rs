@@ -2,6 +2,16 @@
 /// API
 use std::time::Duration;
 
+pub struct BuildConfig {
+    pub provider: CiProvider,
+    pub query: BuildQuery,
+}
+
+pub enum CiProvider {
+    Travis,
+}
+
+#[derive(Clone)]
 pub struct BuildQuery {
     pub branch: String,
     pub project: String,
