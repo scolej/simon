@@ -1,10 +1,10 @@
-use actix::{Actor, Addr, Context, Syn};
+use actix::{Actor, Addr, Context, Handler, Syn};
 use dotenv::dotenv;
 use error::SimonError;
 use model::{BuildQuery, BuildResponse};
 use reqwest::{self, header};
 use std::env;
-use super::{ProviderApi, ProviderService};
+use super::ProviderService;
 
 const URL: &str = "https://api.travis-ci.org";
 
@@ -26,9 +26,7 @@ impl TravisApi {
         headers.set(TravisVersion("3".to_owned()));
         headers
     }
-}
 
-impl ProviderApi for TravisApi {
     fn build_status(&self, query: BuildQuery) -> Result<BuildResponse, SimonError> {
         let client = reqwest::Client::new();
         let api = format!(
@@ -50,20 +48,17 @@ impl ProviderApi for TravisApi {
 
 impl Actor for TravisApi {
     type Context = Context<Self>;
+}
 
-    fn started(&mut self, ctx: &mut Self::Context) {
-        println!("Travis starting");
-        let query = BuildQuery {
-            branch: "master".to_owned(),
-            project: "made-up".to_owned(),
-            namespace: "maccoda".to_owned(),
-        };
-        if let Some(response) = self.build_status(query).ok() {
+impl Handler<BuildQuery> for TravisApi {
+    type Result = ();
+
+    fn handle(&mut self, msg: BuildQuery, ctx: &mut Context<Self>) -> Self::Result {
+        if let Some(response) = self.build_status(msg).ok() {
             self.provider_service.do_send(response);
         }
     }
 }
-
 
 mod model {
     use model::{Build, BuildId, BuildResponse, BuildStatus};
