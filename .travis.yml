@@ -6,10 +6,14 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+    - rust: beta
   fast_finish: true
 before_script:
   - rustup component add rustfmt-preview
+  - cargo fmt --version
 script:
   - cargo fmt --all -- --write-mode=check
   - cargo build
   - cargo test
+
+cache: cargo
