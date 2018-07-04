@@ -52,7 +52,7 @@ impl Actor for TravisApi {
 impl Handler<BuildQuery> for TravisApi {
     type Result = ();
 
-    fn handle(&mut self, msg: BuildQuery, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: BuildQuery, _ctx: &mut Context<Self>) -> Self::Result {
         if let Some(response) = self.build_status(msg).ok() {
             self.provider_service.do_send(response);
         }

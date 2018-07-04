@@ -56,7 +56,7 @@ pub struct ProviderService {
 impl Actor for ProviderService {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
+    fn started(&mut self, _ctx: &mut Self::Context) {
         println!("The main service is running");
     }
 }
@@ -64,7 +64,7 @@ impl Actor for ProviderService {
 impl Handler<BuildResponse> for ProviderService {
     type Result = ();
 
-    fn handle(&mut self, msg: BuildResponse, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: BuildResponse, _ctx: &mut Context<Self>) -> Self::Result {
         self.event_service.do_send(msg);
     }
 }
@@ -86,6 +86,8 @@ impl EventAggregator {
         EventAggregator { events: vec![] }
     }
 
+    /// Takes the next event off the queue. The order that events are removed
+    /// match the temporal order they are received.
     fn next_event(&mut self) -> Option<BuildResponse> {
         self.events.pop()
     }
@@ -98,7 +100,7 @@ impl Actor for EventAggregator {
 impl Handler<BuildResponse> for EventAggregator {
     type Result = ();
 
-    fn handle(&mut self, msg: BuildResponse, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: BuildResponse, _ctx: &mut Context<Self>) -> Self::Result {
         self.events.push(msg);
         println!("Now tracked {} events", self.events.len());
     }

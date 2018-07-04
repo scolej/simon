@@ -7,11 +7,8 @@ use conrod::position::Place;
 use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
 use std::cmp::min;
 use std::collections::HashMap;
-use std::thread::sleep;
-use std::time::Duration;
 
 use simon::random::a_random_build;
-use simon::{Build, BuildId, BuildStatus};
 
 #[derive(PartialEq, Eq, Debug)]
 enum DisplayMode {

@@ -32,7 +32,7 @@ fn random_commit() -> String {
         'a', 'b', 'c', 'd', 'e', 'f', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     ];
     let mut s = String::new();
-    for n in 0..10 {
+    for _n in 0..10 {
         let i: usize = rand::thread_rng().gen::<usize>() % chars.len();
         s.push(chars[i]);
     }
