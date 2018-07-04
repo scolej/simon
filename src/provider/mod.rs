@@ -16,12 +16,10 @@ pub fn start_backend(builds: Vec<BuildConfig>) {
     let addr: Addr<Syn, ProviderService> = ProviderService::new(event_addr).start();
 
     let addr2 = Rc::new(addr.clone());
-    let ci_addr = builds.iter().map(move |build| {
-        match build.provider {
-            CiProvider::Travis => {
-                let travis = travis::TravisApi::new(addr2.as_ref().to_owned());
-                (Arc::new(travis.start()), build.query.clone())
-            }
+    let ci_addr = builds.iter().map(move |build| match build.provider {
+        CiProvider::Travis => {
+            let travis = travis::TravisApi::new(addr2.as_ref().to_owned());
+            (Arc::new(travis.start()), build.query.clone())
         }
     });
     let tasks = ci_addr.map(move |(x, query): (Arc<Addr<Syn, _>>, BuildQuery)| {
@@ -52,7 +50,7 @@ impl Message for BuildQuery {
 /// and the accumulation of the build status. It the endpoint to find the
 /// current status of each build.
 pub struct ProviderService {
-    event_service: Addr<Syn, EventAggregator>
+    event_service: Addr<Syn, EventAggregator>,
 }
 
 impl Actor for ProviderService {
@@ -73,12 +71,14 @@ impl Handler<BuildResponse> for ProviderService {
 
 impl ProviderService {
     pub fn new(actor: Addr<Syn, EventAggregator>) -> ProviderService {
-        ProviderService { event_service: actor }
+        ProviderService {
+            event_service: actor,
+        }
     }
 }
 
 pub struct EventAggregator {
-    events: Vec<BuildResponse>
+    events: Vec<BuildResponse>,
 }
 
 impl EventAggregator {
