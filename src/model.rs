@@ -1,27 +1,4 @@
-/// Modelled representation of the build data to exchange between front end and
-/// API
 use std::time::Duration;
-
-pub struct BuildConfig {
-    pub provider: CiProvider,
-    pub query: BuildQuery,
-}
-
-pub enum CiProvider {
-    Travis,
-}
-
-#[derive(Clone)]
-pub struct BuildQuery {
-    pub branch: String,
-    pub project: String,
-    pub namespace: String,
-}
-
-#[derive(Debug)]
-pub struct BuildResponse {
-    pub build: Build,
-}
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum BuildStatus {
@@ -30,17 +7,17 @@ pub enum BuildStatus {
     Passed,
 }
 
-// FIXME: Probably do not want these to be public accessors
+/// An in-progress or completed build of a project/pipeline etc.
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub struct Build {
-    pub id: BuildId,
-    pub commit: String,
+    /// Name of the thing being built.
+    pub name: String,
+    /// Identifier for the build. Eg: a sequential build number.
+    pub identifier: String,
+    /// Status of the build.
     pub status: BuildStatus,
-    pub elapsed_time: Duration,
-}
-
-#[derive(PartialEq, Eq, Hash, Debug, Clone)]
-pub struct BuildId {
-    pub branch: String,
-    pub number: u16, // By the way, this should probably be a string, to facilitate things like matrix build numbers.
+    /// Hash of the commit being built.
+    pub commit: Option<String>,
+    /// Branch being built.
+    pub branch: Option<String>,
 }

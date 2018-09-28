@@ -7,29 +7,35 @@ use conrod::position::Place;
 use conrod::{widget, Labelable, Positionable, Sizeable, Widget};
 use std::cmp::min;
 use std::collections::HashMap;
+use std::sync::mpsc;
+use std::thread;
 
-use simon::random::a_random_build;
+use simon::model::Build;
+use simon::random;
 
 #[derive(PartialEq, Eq, Debug)]
 enum DisplayMode {
-    Tiny,        // Draw a button for each build with no label.
-    Abbreviated, // Draw a button with only the build number.
-    Full,        // Draw a button with build number, commit hash and build duration.
+    /// Draw a button for each build with no label.
+    Tiny,
+    /// Draw a button with only the build number.
+    Abbreviated,
+    /// Draw a button with build number, commit hash and build duration.
+    Full,
 }
 
-// Given the width and height of the window, determine what display mode to use.
+/// Given the width and height of the window, determine what display mode to use.
 fn display_mode(w: u32, h: u32) -> DisplayMode {
     let small = min(w, h);
     if small < 200 {
         DisplayMode::Tiny
-    } else if small < 400 {
+    } else if small < 500 {
         DisplayMode::Abbreviated
     } else {
         DisplayMode::Full
     }
 }
 
-// Button size in pixels for a given display mode.
+/// Button size in pixels for a given display mode.
 fn button_size(m: &DisplayMode) -> u32 {
     match m {
         DisplayMode::Full => 70,
@@ -38,12 +44,19 @@ fn button_size(m: &DisplayMode) -> u32 {
     }
 }
 
+fn uniqueBuildId(b: &Build) -> String {
+    let mut str = String::new();
+    str.push_str(&b.branch.to_owned().unwrap_or("?".to_string()));
+    str.push_str(&b.identifier);
+    str
+}
+
 fn main() {
-    // Get some test data.
-    let mut builds = Vec::new();
-    for _ in 0..30 {
-        builds.push(a_random_build());
-    }
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(|| {
+        random::findBuilds(tx);
+    });
 
     const WIDTH: u32 = 400;
     const HEIGHT: u32 = 200;
@@ -73,10 +86,6 @@ fn main() {
     let canvas_id = ui.widget_id_generator().next();
 
     let mut build_map = HashMap::new();
-    for b in &builds {
-        let e = build_map.entry(&b.id.branch);
-        e.or_insert(Vec::new()).push(b);
-    }
 
     let mut events = Vec::new();
     'render: loop {
@@ -124,6 +133,21 @@ fn main() {
                 .h(40.0)
                 .set(canvas_id, ui);
 
+            // Read in any new builds.
+            loop {
+                let r = rx.try_recv();
+                if r.is_err() {
+                    break;
+                } else {
+                    let b = r.unwrap();
+                    let bn = b.branch.to_owned().unwrap_or_else(|| { "?".to_string() });
+                    build_map.entry(bn).or_insert(Vec::new()).push(b);
+
+                    // FIXME Does this even work? Surely the UI should realize when it has new widgets!
+                    &ui.needs_redraw();
+                }
+            }
+
             for (branch, builds) in build_map.iter() {
                 let branch_build_id = branch_button_ids
                     .entry(branch.to_owned())
@@ -131,7 +155,7 @@ fn main() {
 
                 // A button for every branch.
                 widget::Button::new()
-                    .label(branch.to_owned())
+                    .label(branch)
                     .down(pad)
                     .x_place(Place::Start(None))
                     .w_h(wide, side)
@@ -139,9 +163,19 @@ fn main() {
 
                 for build in builds.iter() {
                     let widg_build_id = build_button_ids
-                        .entry(build.id.clone())
+                        .entry(uniqueBuildId(build))
                         .or_insert(ui.widget_id_generator().next());
-                    let text = [build.id.number.to_string(), build.commit.to_owned()].join("\n");
+
+                    let mut text = String::new();
+                    text.push_str(&build.identifier);
+                    text.push_str("\n");
+
+                    let c: &str = if build.commit.is_some() {
+                        build.commit.as_ref().unwrap()
+                    } else {
+                        "?"
+                    };
+                    text.push_str(c);
 
                     // A button for every build.
                     let mut bb = widget::Button::new();

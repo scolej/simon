@@ -1,6 +1,17 @@
-use model::{Build, BuildId, BuildStatus};
+use model::*;
 use rand::{self, Rng};
-use std::time::Duration;
+use std::sync::mpsc::Sender;
+use std::thread;
+use std::time::*;
+
+/// Send random builds periodically.
+pub fn findBuilds(sink: Sender<Build>) {
+    loop {
+        sink.send(a_random_build());
+        println!("sent!");
+        thread::sleep(Duration::from_millis(1000));
+    }
+}
 
 fn random_status() -> BuildStatus {
     static STATUSES: [BuildStatus; 3] = [
@@ -39,14 +50,14 @@ fn random_commit() -> String {
     s
 }
 
-pub fn a_random_build() -> Build {
+fn a_random_build() -> Build {
+    let num: i32 = rand::thread_rng().gen();
     Build {
-        id: BuildId {
-            branch: random_branch(),
-            number: rand::thread_rng().gen(),
-        },
-        commit: random_commit(),
+        name: "The Big Project".to_string(),
+        identifier: num.to_string(),
         status: random_status(),
-        elapsed_time: Duration::from_secs(rand::thread_rng().gen()),
+        branch: Some(random_branch()),
+        commit: Some(random_commit()),
+        // elapsed_time: Duration::from_secs(rand::thread_rng().gen()),
     }
 }
